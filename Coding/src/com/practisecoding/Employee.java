@@ -25,7 +25,7 @@ public class Employee {
 	static public void main(String []args) {
 		
 		Address address = new Address("Anantapur", "Andhra Pradesh", "515004");
-		Employee emp = new Employee(101, "Yogananda", address);
+		Employee emp = new Employee(101, "YoganandaNaidu", address);
 		emp.display();
 	}
 	
