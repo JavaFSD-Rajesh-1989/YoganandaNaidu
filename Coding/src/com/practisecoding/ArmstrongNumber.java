@@ -6,7 +6,7 @@ public class ArmstrongNumber {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.print("Enter a number: ");
+        System.out.print("Enter a number to check: ");
         int number = scanner.nextInt();
 
         if (isArmstrong(number)) {
