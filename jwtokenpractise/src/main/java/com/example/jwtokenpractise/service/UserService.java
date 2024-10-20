@@ -24,7 +24,7 @@ public class UserService {
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		return userRepo.save(user);
 	}
-	
+    
 	public Optional<User> findByUsername(String username) {
 		return userRepo.findByUsername(username);
 	}
@@ -33,6 +33,14 @@ public class UserService {
 	    return userRepo.findById(id);
 	}
 
-
+	
+	public boolean deleteUser(Long id) {
+	    Optional<User> userOptional = userRepo.findById(id);
+	    if (userOptional.isPresent()) {
+	        userRepo.delete(userOptional.get()); 
+	        return true; 
+	    }
+	    return false; 
+	}
 }
 
