@@ -1,68 +1,74 @@
 package com.example.jwtokenpractise.controller;
 
-import java.util.List;
-
+import com.example.jwtokenpractise.entity.Blog;
+import com.example.jwtokenpractise.entity.User; // Import User entity
+import com.example.jwtokenpractise.service.BlogService;
+import com.example.jwtokenpractise.service.UserService; // Import UserService
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.jwtokenpractise.entity.Blog;
-import com.example.jwtokenpractise.entity.User;
-import com.example.jwtokenpractise.service.BlogService;
-import com.example.jwtokenpractise.service.UserService;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/blogs")
+//@RequestMapping("/blogs")
 public class BlogController {
 
     @Autowired
     private BlogService blogService;
 
     @Autowired
-    private UserService userService;
+    private UserService userService; // Inject UserService
 
-    @PostMapping
-    public ResponseEntity<Blog> createBlog(@RequestBody Blog blog, @AuthenticationPrincipal UserDetails userDetails) {
-        User author = userService.findByUsername(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("User not found"));
-        blog.setAuthor(author);
-        Blog savedBlog = blogService.createBlog(blog);
-        return ResponseEntity.ok(savedBlog);
+    @PostMapping("/create")
+    public ResponseEntity<Blog> createBlog(@RequestBody Blog blog) {
+        // Get the authenticated user from the SecurityContext
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName(); // Get the username from the authentication
+
+        // Find the user by username
+        User user = userService.findByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Set the author (user) on the blog
+        blog.setAuthor(user);
+        
+        return ResponseEntity.ok(blogService.createBlog(blog));
     }
 
-
-    @GetMapping
+    @GetMapping("/getAll")
     public ResponseEntity<List<Blog>> getAllBlogs() {
-        List<Blog> blogs = blogService.getAllBlogs();
-        return ResponseEntity.ok(blogs);
+        return ResponseEntity.ok(blogService.getAllBlogs());
     }
 
-
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Blog>> getBlogsByUser(@PathVariable Long userId) {
-        User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        List<Blog> blogs = blogService.getAllBlogsByUser(user);
-        return ResponseEntity.ok(blogs);
+    @GetMapping("/{id}")
+    public ResponseEntity<Blog> getBlogById(@PathVariable Long id) {
+        Optional<Blog> blogOptional = blogService.getBlogById(id);
+        return blogOptional.map(ResponseEntity::ok)
+                           .orElse(ResponseEntity.notFound().build());
     }
-
-    @GetMapping("/search")
-    public ResponseEntity<List<Blog>> searchBlogs(@RequestParam String query) {
-        List<Blog> blogs = blogService.searchBlogs(query);
-        return ResponseEntity.ok(blogs);
-    }
-
 
     @PutMapping("/{id}")
-    public ResponseEntity<Blog> updateBlog(@PathVariable Long id, @RequestBody Blog blogDetails) {
-        Blog updatedBlog = blogService.updateBlog(id, blogDetails);
-        return ResponseEntity.ok(updatedBlog);
+    public ResponseEntity<Blog> updateBlog(@PathVariable Long id, @RequestBody Blog blog) {
+        // Get the authenticated user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        
+        User user = userService.findByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Set the author (user) on the blog
+        blog.setAuthor(user);
+        
+        return ResponseEntity.ok(blogService.updateBlog(id, blog));
     }
-
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBlog(@PathVariable Long id) {
-        blogService.deleteBlog(id);
-        return ResponseEntity.noContent().build();
+        boolean isDeleted = blogService.deleteBlog(id);
+        return isDeleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 }
