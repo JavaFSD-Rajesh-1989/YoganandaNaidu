@@ -30,13 +30,13 @@ public class UserServlet extends HttpServlet{
 		        String email = request.getParameter("email");
 		        String password = request.getParameter("password");
 
-		        // Creating object of the buyer
+
 		        User user = new User();
 		        user.setEmail(email);
 		        user.setPassword(password);
 
 
-		        UserServiceInterface userService = ServiceFactory.UserObject("buyer");
+		        UserServiceInterface userService = ServiceFactory.UserObject("user");
 
 
 		        User loggedUser = userService.LoginUser(user);
@@ -72,7 +72,7 @@ public class UserServlet extends HttpServlet{
  
 			
 			try {
-			UserServiceInterface userService = ServiceFactory.UserObject("buyer"); 
+			UserServiceInterface userService = ServiceFactory.UserObject("user"); 
 			
 			User registeredUser = userService.LoginUser(user);
 			
@@ -93,7 +93,7 @@ public class UserServlet extends HttpServlet{
 				}
 			}catch(Exception e) {
 				
-				e.printStackTrace(); // Log the error for debugging purposes
+				e.printStackTrace(); 
        	    response.setContentType("text/html");
        	    response.getWriter().println("<script type='text/javascript'>");
        	    response.getWriter().println("alert('An unexpected error occurred during registration. Please try again later.');");
